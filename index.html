@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ضل المانجا - Shadow Manga</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#07080c',
+                        darkCard: '#11131c',
+                        darkBorder: '#1e2235',
+                        primary: '#8b5cf6',
+                        primaryDark: '#6d28d9',
+                        secondary: '#06b6d4',
+                        accent: '#ec4899'
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #07080c;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(17, 19, 28, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+        }
+
+        .glass-header {
+            background: rgba(7, 8, 12, 0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07080c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2235;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .page-fade {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-primary selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MAIN HEADER -->
+    <header class="sticky top-0 z-40 glass-header w-full px-4 lg:px-8 py-3.5 transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            
+            <!-- Logo & Brand -->
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="navigateTo('home')">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-primary via-purple-600 to-secondary flex items-center justify-center text-white shadow-lg neon-glow group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-mask text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-xl lg:text-2xl tracking-tight bg-gradient-to-r from-white via-gray-200 to-primary bg-clip-text text-transparent">
+                        ضل المانجا
+                    </h1>
+                    <span class="text-[10px] text-secondary font-mono block -mt-1 tracking-widest uppercase font-bold">SHADOW MANGA</span>
+                </div>
+            </div>
+
+            <!-- Search Bar (Desktop) -->
+            <div class="hidden md:flex flex-1 max-w-md relative">
+                <input type="text" id="desktop-search" oninput="handleSearch(this.value)" 
+                    placeholder="ابحث عن مانجا، تصنيف، أو فصول..." 
+                    class="w-full bg-darkCard/90 text-sm text-gray-200 border border-darkBorder rounded-2xl py-2.5 px-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-inner">
+                <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-gray-400"></i>
+                
+                <!-- Search Results Dropdown -->
+                <div id="search-results" class="hidden absolute top-12 right-0 left-0 glass rounded-2xl p-2 shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-darkBorder"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleSearchMobile()" class="md:hidden w-10 h-10 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button onclick="navigateTo('bookmarks')" class="relative w-10 h-10 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-gray-300 hover:text-primary transition-colors" title="المفضلة">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span id="bookmark-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-accent text-[10px] font-bold rounded-full flex items-center justify-center text-white">0</span>
+                </button>
+                <button onclick="navigateTo('history')" class="w-10 h-10 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-gray-300 hover:text-secondary transition-colors" title="سجل القراءة">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button onclick="openAdminModal()" class="w-10 h-10 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/40 flex items-center justify-center text-primary hover:scale-105 transition-transform" title="لوحة التحكم">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Bar Mobile Overlay -->
+        <div id="mobile-search-bar" class="hidden md:hidden mt-3 pt-2 border-t border-darkBorder relative">
+            <input type="text" id="mobile-search" oninput="handleSearch(this.value)" placeholder="ابحث عن مانجا..." 
+                class="w-full bg-darkCard text-sm text-gray-200 border border-darkBorder rounded-xl py-2 px-9 focus:outline-none focus:border-primary">
+            <i class="fa-solid fa-magnifying-glass absolute right-3 top-5 text-gray-400"></i>
+            <div id="mobile-search-results" class="hidden absolute top-14 right-0 left-0 glass rounded-xl p-2 shadow-2xl z-50 max-h-60 overflow-y-auto"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="app-container" class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6">
+
+        <!-- VIEW 1: HOME SCREEN -->
+        <section id="view-home" class="space-y-8 page-fade">
+            
+            <!-- Hero Featured Banner -->
+            <div class="relative rounded-3xl overflow-hidden glass border border-darkBorder min-h-[340px] sm:min-h-[400px] flex items-end p-6 sm:p-10 shadow-2xl">
+                <div id="hero-bg" class="absolute inset-0 bg-cover bg-center transition-all duration-700 filter brightness-[0.35]" style="background-image: url('https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1200&auto=format&fit=crop');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-darkBg via-darkBg/60 to-transparent"></div>
+
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/20 text-primary border border-primary/40 backdrop-blur-md">
+                        <i class="fa-solid fa-fire text-accent"></i> عمل الأسبوع الموصى به
+                    </span>
+                    <h2 id="hero-title" class="text-2xl sm:text-4xl font-black text-white leading-tight">سيد الظلال: العودة للقمة</h2>
+                    <p id="hero-desc" class="text-xs sm:text-sm text-gray-300 line-clamp-2 sm:line-clamp-3">في عالم تحكمه الفوضى والسحر الأسود، يستيقظ البطل بعد مئة عام من سباته ليجد أن إمبراطوريته سقطت، ويبدأ رحلة الانتقام واستعادة عرشه المفقود بمساعدة ظلاله الخالدة...</p>
+                    
+                    <div class="flex items-center gap-4 pt-2">
+                        <button id="hero-btn" onclick="openMangaDetails(1)" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:from-primaryDark hover:to-primary text-white font-bold text-sm shadow-lg neon-glow flex items-center gap-2 hover:gap-3 transition-all">
+                            <span>ابدأ القراءة الآن</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <span id="hero-rating" class="text-yellow-400 font-bold text-sm flex items-center gap-1">
+                            <i class="fa-solid fa-star"></i> 4.9
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Filter Tabs -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-darkBorder/60 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-compass text-primary"></i> تصفح المكتبة
+                </h3>
+                <div id="category-filters" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                    <button onclick="filterByCategory('all')" class="cat-btn active px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-primary text-white shadow-md">الكل</button>
+                    <button onclick="filterByCategory('أكشن')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-darkCard text-gray-400 border border-darkBorder hover:text-white">أكشن</button>
+                    <button onclick="filterByCategory('خيال')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-darkCard text-gray-400 border border-darkBorder hover:text-white">خيال</button>
+                    <button onclick="filterByCategory('مغامرات')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-darkCard text-gray-400 border border-darkBorder hover:text-white">مغامرات</button>
+                    <button onclick="filterByCategory('دراما')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-darkCard text-gray-400 border border-darkBorder hover:text-white">دراما</button>
+                    <button onclick="filterByCategory('رومانسي')" class="cat-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-darkCard text-gray-400 border border-darkBorder hover:text-white">رومانسي</button>
+                </div>
+            </div>
+
+            <!-- Manga Cards Grid -->
+            <div id="manga-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                <!-- Dynamic Content injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: MANGA DETAILS VIEW -->
+        <section id="view-details" class="hidden space-y-8 page-fade">
+            <button onclick="navigateTo('home')" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-primary transition-colors">
+                <i class="fa-solid fa-arrow-right"></i> العودة للرئيسية
+            </button>
+
+            <!-- Manga Header Card -->
+            <div id="details-header" class="glass rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start relative overflow-hidden">
+                <div id="details-bg-blur" class="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-10 pointer-events-none"></div>
+
+                <!-- Cover Image -->
+                <div class="relative w-full md:w-56 h-80 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 border border-darkBorder">
+                    <img id="details-cover" src="" alt="غلاف المانجا" class="w-full h-full object-cover">
+                    <span id="details-status" class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/90 text-white backdrop-blur-md shadow">مستمر</span>
+                </div>
+
+                <!-- Details Info -->
+                <div class="flex-1 space-y-4 relative z-10">
+                    <div>
+                        <div class="flex items-center gap-2 text-xs font-bold text-secondary mb-1">
+                            <span id="details-category">أكشن • خيال</span>
+                        </div>
+                        <h2 id="details-title" class="text-2xl sm:text-4xl font-black text-white">عنوان المانجا</h2>
+                        <p id="details-author" class="text-xs text-gray-400 mt-1">المؤلف: <span class="text-gray-200">غير معروف</span></p>
+                    </div>
+
+                    <p id="details-summary" class="text-sm text-gray-300 leading-relaxed max-w-3xl">
+                        نبذة عن العمل...
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-6 py-3 border-y border-darkBorder">
+                        <div>
+                            <span class="block text-[10px] text-gray-400">التقييم العام</span>
+                            <span id="details-rating" class="text-sm font-bold text-yellow-400 flex items-center gap-1">
+                                <i class="fa-solid fa-star"></i> 4.8
+                            </span>
+                        </div>
+                        <div class="h-6 w-px bg-darkBorder"></div>
+                        <div>
+                            <span class="block text-[10px] text-gray-400">عدد الفصول المتاحة</span>
+                            <span id="details-chapters-count" class="text-sm font-bold text-white">0</span>
+                        </div>
+                        <div class="h-6 w-px bg-darkBorder"></div>
+                        <div>
+                            <span class="block text-[10px] text-gray-400">إجمالي المشاهدات</span>
+                            <span id="details-views" class="text-sm font-bold text-white">12.4K</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                        <button id="btn-start-reading" onclick="startReading()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-bold text-sm shadow-lg neon-glow flex items-center gap-2">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span id="start-reading-text">بدء القراءة من الفصل 1</span>
+                        </button>
+                        <button id="btn-toggle-bookmark" onclick="toggleCurrentBookmark()" class="px-4 py-3 rounded-xl bg-darkCard border border-darkBorder hover:border-primary text-gray-300 hover:text-white font-bold text-sm flex items-center gap-2">
+                            <i class="fa-regular fa-bookmark"></i>
+                            <span>إضافة للمفضلة</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chapters List Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-ul text-primary"></i> قائمة الفصول
+                    </h3>
+                    <button onclick="reverseChaptersOrder()" class="text-xs text-gray-400 hover:text-primary flex items-center gap-1 bg-darkCard px-3 py-1.5 rounded-lg border border-darkBorder">
+                        <i class="fa-solid fa-sort"></i> عكس الترتيب
+                    </button>
+                </div>
+
+                <div id="chapters-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- Dynamic Chapters Cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: INTERACTIVE READER MODE -->
+        <section id="view-reader" class="hidden space-y-4 page-fade">
+            
+            <!-- Reader Control Header Toolbar -->
+            <div class="glass sticky top-16 z-30 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 border border-darkBorder">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeReader()" class="w-9 h-9 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-gray-300 hover:text-white" title="إغلاق القارئ">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div>
+                        <h4 id="reader-manga-title" class="text-xs text-gray-400 font-medium">عنوان المانجا</h4>
+                        <p id="reader-chapter-title" class="text-sm font-bold text-white">الفصل 1</p>
+                    </div>
+                </div>
+
+                <!-- Mode Controls (Continuous Scroll vs Page by Page) -->
+                <div class="flex items-center gap-1.5 bg-darkCard p-1 rounded-xl border border-darkBorder">
+                    <button id="mode-scroll-btn" onclick="setReaderMode('scroll')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-primary text-white">
+                        <i class="fa-solid fa-scroll"></i> عمودي
+                    </button>
+                    <button id="mode-page-btn" onclick="setReaderMode('page')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-book-open"></i> أفقي (صفحات)
+                    </button>
+                </div>
+
+                <!-- Chapter Selector Dropdown, Zoom & Fullscreen -->
+                <div class="flex items-center gap-2">
+                    <button onclick="changeZoom(-10)" class="w-8 h-8 rounded-lg bg-darkCard text-gray-300 hover:text-white text-xs border border-darkBorder" title="تصغير">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <span id="zoom-level" class="text-xs text-gray-400 font-mono w-9 text-center">100%</span>
+                    <button onclick="changeZoom(10)" class="w-8 h-8 rounded-lg bg-darkCard text-gray-300 hover:text-white text-xs border border-darkBorder" title="تكبير">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <button onclick="toggleFullscreen()" class="w-8 h-8 rounded-lg bg-darkCard text-gray-300 hover:text-white text-xs border border-darkBorder" title="ملء الشاشة">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+
+                    <select id="reader-chapter-select" onchange="jumpToChapter(this.value)" class="bg-darkCard border border-darkBorder text-xs text-gray-200 rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary">
+                        <!-- Dynamic Options -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Reading Progress Bar -->
+            <div class="w-full bg-darkCard rounded-full h-1.5 overflow-hidden">
+                <div id="reader-progress" class="bg-gradient-to-r from-primary via-secondary to-accent h-full w-0 transition-all duration-200"></div>
+            </div>
+
+            <!-- READER DISPLAY AREA -->
+            <div id="reader-display-area" class="w-full min-h-[60vh] flex flex-col items-center justify-center py-4">
+                
+                <!-- CONTINUOUS VERTICAL SCROLL MODE -->
+                <div id="scroll-container" class="w-full max-w-3xl flex flex-col items-center space-y-1">
+                    <!-- Pages Images Injected Here -->
+                </div>
+
+                <!-- PAGE BY PAGE HORIZONTAL MODE -->
+                <div id="page-container" class="hidden flex-col items-center max-w-3xl w-full">
+                    <div class="relative w-full flex justify-center items-center overflow-hidden rounded-2xl bg-darkCard/60 p-2 border border-darkBorder">
+                        <img id="current-page-img" src="" alt="صفحة المانجا" class="max-h-[80vh] w-auto object-contain transition-all duration-300">
+                    </div>
+                    
+                    <!-- Page Navigation Controls -->
+                    <div class="flex items-center justify-between w-full max-w-md mt-4">
+                        <button onclick="prevPage()" class="px-5 py-2.5 rounded-xl bg-darkCard border border-darkBorder hover:border-primary text-xs font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chevron-right"></i> الصفحة السابقة
+                        </button>
+                        <span id="page-counter-text" class="text-xs text-gray-400 font-bold font-mono">1 / 10</span>
+                        <button onclick="nextPage()" class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primaryDark text-xs font-bold text-white flex items-center gap-2 shadow">
+                            الصفحة التالية <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Chapter Navigation Bar -->
+            <div class="flex items-center justify-between border-t border-darkBorder pt-4 max-w-3xl mx-auto">
+                <button id="btn-prev-chapter" onclick="navigateChapter(-1)" class="px-5 py-2.5 rounded-xl bg-darkCard border border-darkBorder hover:border-primary text-xs font-bold text-gray-300 hover:text-white flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-right"></i> الفصل السابق
+                </button>
+                <button id="btn-next-chapter" onclick="navigateChapter(1)" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-xs font-bold text-white flex items-center gap-2 shadow-lg">
+                    الفصل التالي <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+
+            <!-- COMMENTS SECTION PER CHAPTER -->
+            <div class="max-w-3xl mx-auto pt-8 border-t border-darkBorder space-y-6">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-comments text-primary"></i> تعليقات القراء للفصل (<span id="comments-count">0</span>)
+                </h3>
+
+                <!-- Add Comment Form -->
+                <div class="glass rounded-2xl p-4 space-y-3">
+                    <input type="text" id="comment-author" placeholder="اسمك أو لقبك..." class="bg-darkCard border border-darkBorder rounded-xl text-xs text-gray-200 px-3.5 py-2 w-full sm:w-60 focus:outline-none focus:border-primary">
+                    <textarea id="comment-text" rows="3" placeholder="شاركونا رأيكم وانطباعاتكم حول أحداث هذا الفصل..." class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-gray-200 p-3 focus:outline-none focus:border-primary resize-none"></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="submitComment()" class="px-6 py-2 rounded-xl bg-primary hover:bg-primaryDark text-white text-xs font-bold shadow-md">
+                            نشر التعليق
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comments List -->
+                <div id="comments-list" class="space-y-3">
+                    <!-- Dynamic Comments -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- VIEW 4: BOOKMARKS & HISTORY VIEW -->
+        <section id="view-bookmarks" class="hidden space-y-6 page-fade">
+            <div class="flex items-center justify-between border-b border-darkBorder pb-4">
+                <h2 id="bookmarks-view-title" class="text-2xl font-black text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-primary"></i> قائمة المفضلة
+                </h2>
+                <button onclick="navigateTo('home')" class="text-xs text-gray-400 hover:text-white">العودة للرئيسية</button>
+            </div>
+
+            <div id="bookmarks-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Dynamic Items -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER SECTION -->
+    <footer class="glass border-t border-darkBorder mt-16 py-8 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow">
+                    <i class="fa-solid fa-mask"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-gray-200 block text-sm">ضل المانجا - Shadow Manga</span>
+                    <span class="text-[10px]">© 2026 جميع الحقوق محفوظة لجميع الأعمال المترجمة</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-6">
+                <button onclick="openDmcaModal()" class="hover:text-primary transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-secondary"></i> سياسة النشر و DMCA
+                </button>
+                <a href="#" class="hover:text-primary transition-colors">الشروط والأحكام</a>
+                <a href="#" class="hover:text-primary transition-colors">تواصل مع الادارة</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ADMIN MODAL (ADD MANGA & CHAPTERS) -->
+    <div id="admin-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass rounded-3xl max-w-xl w-full p-6 space-y-5 relative max-h-[90vh] overflow-y-auto border border-darkBorder">
+            <button onclick="closeAdminModal()" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-darkCard text-gray-400 hover:text-white flex items-center justify-center border border-darkBorder">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-3 border-b border-darkBorder pb-3">
+                <i class="fa-solid fa-sliders text-xl text-primary"></i>
+                <h3 class="text-lg font-bold text-white">لوحة إدخال وإدارة المحتوى</h3>
+            </div>
+
+            <!-- Prototype access gate: replace with Supabase Auth before public launch -->
+            <div id="admin-auth-sec" class="space-y-4">
+                <p class="text-xs text-gray-300">هذه لوحة تجريبية محلية. تسجيل الدخول الحقيقي والصلاحيات الآمنة ستُربط بـ Supabase قبل النشر:</p>
+                <input type="password" id="admin-pass-input" placeholder="دخول تجريبي للمعاينة فقط" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-3 focus:outline-none focus:border-primary">
+                <button onclick="authenticateAdmin()" class="w-full py-2.5 rounded-xl bg-primary text-white text-xs font-bold shadow">تسجيل الدخول</button>
+            </div>
+
+            <!-- Admin Action Form -->
+            <div id="admin-form-sec" class="hidden space-y-5">
+                <section class="rounded-2xl border border-primary/30 bg-primary/5 p-4 space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-white">إدارة الرتب والصلاحيات</h4>
+                            <p class="text-[11px] text-gray-400 mt-1">معاينة محلية للنظام — لا تمنح صلاحيات حقيقية قبل ربط Supabase</p>
+                        </div>
+                        <i class="fa-solid fa-user-shield text-primary text-xl"></i>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input id="role-user-email" type="email" placeholder="بريد المستخدم" class="bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5">
+                        <select id="role-user-select" class="bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5"></select>
+                    </div>
+                    <button onclick="assignDemoRole()" class="w-full py-2 rounded-xl bg-primary text-white text-xs font-bold">تعيين الرتبة للمستخدم</button>
+                    <div class="border-t border-darkBorder pt-3 space-y-2">
+                        <p class="text-xs font-bold text-secondary">إنشاء رتبة مخصصة</p>
+                        <input id="custom-role-name" type="text" placeholder="اسم الرتبة بالعربية أو الإنجليزية" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5">
+                        <div class="grid grid-cols-2 gap-2 text-xs text-gray-300">
+                            <label class="flex items-center gap-2"><input type="checkbox" value="manga:create" class="custom-role-perm"> إضافة مانجا</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" value="chapter:publish" class="custom-role-perm"> نشر الفصول</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" value="content:review" class="custom-role-perm"> مراجعة المحتوى</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" value="comments:moderate" class="custom-role-perm"> إدارة التعليقات</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" value="users:manage" class="custom-role-perm"> إدارة المستخدمين</label>
+                            <label class="flex items-center gap-2"><input type="checkbox" value="roles:manage" class="custom-role-perm"> إدارة الرتب</label>
+                        </div>
+                        <button onclick="createCustomRole()" class="w-full py-2 rounded-xl bg-secondary text-darkBg text-xs font-bold">إنشاء الرتبة</button>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold text-gray-200">الرتب المعرفة</p>
+                        <div id="roles-list" class="space-y-2"></div>
+                        <p class="text-xs font-bold text-gray-200 pt-2">تعيينات المستخدمين التجريبية</p>
+                        <div id="role-assignments-list" class="space-y-2"></div>
+                    </div>
+                </section>
+
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-primary uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle"></i> إضافة عمل مانجا جديد
+                    </h4>
+                    <input type="text" id="new-manga-title" placeholder="عنوان المانجا" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 focus:outline-none focus:border-primary">
+                    <input type="text" id="new-manga-cover" placeholder="رابط صورة الغلاف (Image URL)" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 focus:outline-none focus:border-primary">
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="new-manga-category" class="bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5">
+                            <option value="أكشن">أكشن</option>
+                            <option value="خيال">خيال</option>
+                            <option value="مغامرات">مغامرات</option>
+                            <option value="دراما">دراما</option>
+                            <option value="رومانسي">رومانسي</option>
+                        </select>
+                        <input type="text" id="new-manga-author" placeholder="اسم المؤلف" class="bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 focus:outline-none focus:border-primary">
+                    </div>
+                    
+                    <textarea id="new-manga-desc" placeholder="نبذة مختصرة عن القصة..." class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 h-20 focus:outline-none focus:border-primary resize-none"></textarea>
+                    
+                    <button onclick="addNewManga()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold shadow">
+                        إضافة المانجا للمكتبة
+                    </button>
+                </div>
+
+                <hr class="border-darkBorder">
+
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-secondary uppercase flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-circle-plus"></i> إضافة فصل جديد لعمل حالي
+                    </h4>
+                    <select id="admin-select-manga" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5">
+                        <!-- Dynamic Manga list -->
+                    </select>
+                    <input type="number" id="new-chapter-num" placeholder="رقم الفصل (مثال: 3)" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 focus:outline-none focus:border-secondary">
+                    <textarea id="new-chapter-images" placeholder="روابط صور الفصل (أدخل رابط كل صورة في سطر جديد أو يفصل بينها بفصلات)" class="w-full bg-darkCard border border-darkBorder rounded-xl text-xs text-white p-2.5 h-24 focus:outline-none focus:border-secondary resize-none"></textarea>
+
+                    <button onclick="addNewChapter()" class="w-full py-2.5 rounded-xl bg-secondary text-darkBg text-xs font-bold shadow">
+                        نشر الفصل
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- DMCA MODAL -->
+    <div id="dmca-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass rounded-3xl max-w-lg w-full p-6 space-y-4 relative border border-darkBorder">
+            <button onclick="closeDmcaModal()" class="absolute top-4 left-4 w-8 h-8 rounded-full bg-darkCard text-gray-400 hover:text-white flex items-center justify-center border border-darkBorder">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-secondary"></i> حقوق النشر و سياسة DMCA
+            </h3>
+            <p class="text-xs text-gray-300 leading-relaxed">
+                جميع المحتويات والمانجا المعروضة على منصة **"ضل المانجا"** مأخوذة من مصادر مفتوحة ومترجمين مستقلين. نحن نحترم تماماً حقوق الملكية الفكرية للمؤلفين والناشرين الأصليين.
+                <br><br>
+                إذا كنت تعتقد أن هناك محتوى ينتهك حقوق النشر الخاصة بك، يرجى التواصل معنا عبر البريد الإلكتروني وسنقوم بمراجعة وإزالة المحتوى فوراً خلال 24 ساعة من تاريخ الطلب.
+            </p>
+            <div class="pt-2">
+                <button onclick="closeDmcaModal()" class="w-full py-2.5 rounded-xl bg-darkCard border border-darkBorder text-white text-xs font-bold">فهمت ذلك</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APP ENGINE -->
+    <script>
+        /* INITIAL DATASET */
+        const initialMangaData = [
+            {
+                id: 1,
+                title: "سيد الظلال: العودة للقمة",
+                cover: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=600&auto=format&fit=crop",
+                category: "أكشن",
+                rating: 4.9,
+                author: "بارك سو-جين",
+                views: "45.2K",
+                status: "مستمر",
+                description: "في عالم تحكمه الفوضى والسحر الأسود، يستيقظ البطل بعد مئة عام من سباته ليجد أن إمبراطوريته سقطت، ويبدأ رحلة الانتقام واستعادة عرشه المفقود بمساعدة ظلاله الخالدة.",
+                chapters: [
+                    {
+                        number: 1,
+                        title: "الفصل 1: الصحوة من جديد",
+                        images: [
+                            "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    },
+                    {
+                        number: 2,
+                        title: "الفصل 2: مواجهة في الأنقاض",
+                        images: [
+                            "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "أكاديمية السحر اللانهائي",
+                cover: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=600&auto=format&fit=crop",
+                category: "خيال",
+                rating: 4.7,
+                author: "كينجي ياماموتو",
+                views: "32.1K",
+                status: "مستمر",
+                description: "فتى ولد بدون طاقة سحرية في عالم يعتمد كلياً على السحر، يكتشف كتاباً قديماً يمنحه القدرة على إلغاء واستيعاب تعاويذ الآخرين.",
+                chapters: [
+                    {
+                        number: 1,
+                        title: "الفصل 1: الفتى العادي",
+                        images: [
+                            "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+                            "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "فارس الفراغ الأخير",
+                cover: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=600&auto=format&fit=crop",
+                category: "مغامرات",
+                rating: 4.8,
+                author: "لي تشونغ",
+                views: "28.9K",
+                status: "مستمر",
+                description: "رحلة ملحمية عبر الأبعاد لاستعادة الجواهر السبع المفقودة ومنع انهيار العالم الموازي.",
+                chapters: [
+                    {
+                        number: 1,
+                        title: "الفصل 1: البوابة الأولى",
+                        images: [
+                            "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "زهرة البركان الخفي",
+                cover: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=600&auto=format&fit=crop",
+                category: "رومانسي",
+                rating: 4.6,
+                author: "إيلينا رويز",
+                views: "19.5K",
+                status: "مكتمل",
+                description: "قصة عشق ملحمية في العصور الوسطى بين دوقة متمردة وقائد الحرس الملكي.",
+                chapters: [
+                    {
+                        number: 1,
+                        title: "الفصل 1: اللقاء الأول",
+                        images: [
+                            "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "صياد التنانين الرقمي",
+                cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop",
+                category: "دراما",
+                rating: 4.5,
+                author: "ساتوشي تاكاهاشي",
+                views: "15.0K",
+                status: "مستمر",
+                description: "عندما تدمج التكنولوجيا مع السحر القديم، يظهر فصيل جديد من الصيادين في مستقبل سايبربانك.",
+                chapters: [
+                    {
+                        number: 1,
+                        title: "الفصل 1: الشفرة الأولى",
+                        images: [
+                            "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop"
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        /* STATE MANAGEMENT */
+        let mangaList = [];
+        let bookmarks = [];
+        let readingHistory = {};
+        let commentsData = {};
+        
+        let currentMangaId = null;
+        let currentChapterNum = 1;
+        let readerMode = 'scroll';
+        let currentPageIndex = 0;
+        let zoomLevel = 100;
+        let chaptersReversed = false;
+        let isAdminLoggedIn = false;
+
+        /* INITIALIZATION */
+        window.onload = function() {
+            loadLocalStorageData();
+            renderMangaGrid(mangaList);
+            updateBookmarkBadge();
+            
+            window.addEventListener('scroll', handleScrollProgress);
+        };
+
+        function loadLocalStorageData() {
+            const savedManga = localStorage.getItem('shadow_manga_list');
+            mangaList = savedManga ? JSON.parse(savedManga) : initialMangaData;
+
+            const savedBookmarks = localStorage.getItem('shadow_bookmarks');
+            bookmarks = savedBookmarks ? JSON.parse(savedBookmarks) : [];
+
+            const savedHistory = localStorage.getItem('shadow_history');
+            readingHistory = savedHistory ? JSON.parse(savedHistory) : {};
+
+            const savedComments = localStorage.getItem('shadow_comments');
+            commentsData = savedComments ? JSON.parse(savedComments) : {};
+        }
+
+        function saveDataToStorage() {
+            localStorage.setItem('shadow_manga_list', JSON.stringify(mangaList));
+            localStorage.setItem('shadow_bookmarks', JSON.stringify(bookmarks));
+            localStorage.setItem('shadow_history', JSON.stringify(readingHistory));
+            localStorage.setItem('shadow_comments', JSON.stringify(commentsData));
+            updateBookmarkBadge();
+        }
+
+        /* NAVIGATION CONTROL */
+        function navigateTo(viewName) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-details').classList.add('hidden');
+            document.getElementById('view-reader').classList.add('hidden');
+            document.getElementById('view-bookmarks').classList.add('hidden');
+
+            if (viewName === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+                renderMangaGrid(mangaList);
+            } else if (viewName === 'details') {
+                document.getElementById('view-details').classList.remove('hidden');
+            } else if (viewName === 'reader') {
+                document.getElementById('view-reader').classList.remove('hidden');
+            } else if (viewName === 'bookmarks') {
+                document.getElementById('view-bookmarks').classList.remove('hidden');
+                renderBookmarksView('bookmarks');
+            } else if (viewName === 'history') {
+                document.getElementById('view-bookmarks').classList.remove('hidden');
+                renderBookmarksView('history');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* RENDER MANGA GRID */
+        function renderMangaGrid(list) {
+            const grid = document.getElementById('manga-grid');
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">لا توجد أعمال تطابق بحثك.</div>`;
+                return;
+            }
+
+            list.forEach(manga => {
+                const isBookmarked = bookmarks.includes(manga.id);
+                const card = document.createElement('div');
+                card.className = 'glass rounded-2xl overflow-hidden border border-darkBorder hover:border-primary/50 transition-all duration-300 group flex flex-col justify-between hover:shadow-xl';
+                card.innerHTML = `
+                    <div class="relative aspect-[3/4] overflow-hidden cursor-pointer" onclick="openMangaDetails(${manga.id})">
+                        <img src="${manga.cover}" alt="${manga.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-darkBg via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-darkCard/90 text-secondary border border-secondary/30 backdrop-blur-md">
+                            ${manga.category}
+                        </span>
+                        <button onclick="event.stopPropagation(); toggleBookmark(${manga.id})" class="absolute top-2.5 left-2.5 w-8 h-8 rounded-full bg-darkCard/80 backdrop-blur-md border border-white/10 flex items-center justify-center ${isBookmarked ? 'text-accent' : 'text-gray-300'} hover:text-accent transition-colors">
+                            <i class="${isBookmarked ? 'fa-solid' : 'fa-regular'} fa-bookmark text-xs"></i>
+                        </button>
+                        <span class="absolute bottom-2 right-2 text-yellow-400 text-xs font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-star text-[10px]"></i> ${manga.rating}
+                        </span>
+                    </div>
+                    <div class="p-3 space-y-1.5 flex-1 flex flex-col justify-between">
+                        <h4 onclick="openMangaDetails(${manga.id})" class="font-bold text-xs sm:text-sm text-white line-clamp-1 hover:text-primary cursor-pointer transition-colors">${manga.title}</h4>
+                        <div class="flex items-center justify-between text-[11px] text-gray-400 pt-1">
+                            <span>${manga.chapters.length} فصول</span>
+                            <span class="text-gray-500">${manga.status}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* CATEGORY FILTER */
+        function filterByCategory(cat) {
+            const btns = document.querySelectorAll('.cat-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-primary', 'text-white', 'shadow-md');
+                b.classList.add('bg-darkCard', 'text-gray-400');
+            });
+            event.target.classList.add('bg-primary', 'text-white', 'shadow-md');
+            event.target.classList.remove('bg-darkCard', 'text-gray-400');
+
+            if (cat === 'all') {
+                renderMangaGrid(mangaList);
+            } else {
+                const filtered = mangaList.filter(m => m.category === cat);
+                renderMangaGrid(filtered);
+            }
+        }
+
+        /* MANGA DETAILS VIEW */
+        function openMangaDetails(id) {
+            currentMangaId = id;
+            const manga = mangaList.find(m => m.id === id);
+            if (!manga) return;
+
+            document.getElementById('details-cover').src = manga.cover;
+            document.getElementById('details-bg-blur').style.backgroundImage = `url(${manga.cover})`;
+            document.getElementById('details-title').innerText = manga.title;
+            document.getElementById('details-category').innerText = `${manga.category} • ${manga.status}`;
+            document.getElementById('details-author').innerHTML = `المؤلف: <span class="text-gray-200">${manga.author || 'غير معروف'}</span>`;
+            document.getElementById('details-summary').innerText = manga.description;
+            document.getElementById('details-rating').innerHTML = `<i class="fa-solid fa-star"></i> ${manga.rating}`;
+            document.getElementById('details-chapters-count').innerText = manga.chapters.length;
+            document.getElementById('details-views').innerText = manga.views || '10K';
+
+            const isBookmarked = bookmarks.includes(id);
+            const bmBtn = document.getElementById('btn-toggle-bookmark');
+            bmBtn.innerHTML = isBookmarked ? `<i class="fa-solid fa-bookmark text-accent"></i><span>في المفضلة</span>` : `<i class="fa-regular fa-bookmark"></i><span>إضافة للمفضلة</span>`;
+
+            const lastReadChapter = readingHistory[id] || 1;
+            document.getElementById('start-reading-text').innerText = `بدء القراءة من الفصل ${lastReadChapter}`;
+
+            renderChaptersList(manga.chapters);
+            navigateTo('details');
+        }
+
+        function renderChaptersList(chapters) {
+            const listContainer = document.getElementById('chapters-list');
+            listContainer.innerHTML = '';
+
+            let displayChapters = [...chapters];
+            if (chaptersReversed) displayChapters.reverse();
+
+            displayChapters.forEach(chap => {
+                const isRead = readingHistory[currentMangaId] === chap.number;
+                const card = document.createElement('div');
+                card.className = `glass rounded-xl p-3 flex items-center justify-between border ${isRead ? 'border-primary/50 bg-primary/10' : 'border-darkBorder'} hover:border-primary cursor-pointer transition-all`;
+                card.onclick = () => openReader(currentMangaId, chap.number);
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg ${isRead ? 'bg-primary text-white' : 'bg-darkCard text-gray-400'} flex items-center justify-center font-bold text-xs">
+                            ${chap.number}
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-white">${chap.title}</h5>
+                            <span class="text-[10px] text-gray-500">${chap.images.length} صفحة</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-left text-xs text-gray-500"></i>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function reverseChaptersOrder() {
+            chaptersReversed = !chaptersReversed;
+            const manga = mangaList.find(m => m.id === currentMangaId);
+            if (manga) renderChaptersList(manga.chapters);
+        }
+
+        function startReading() {
+            const lastRead = readingHistory[currentMangaId] || 1;
+            openReader(currentMangaId, lastRead);
+        }
+
+        /* INTERACTIVE READER MODE FUNCTIONS */
+        function openReader(mangaId, chapterNum) {
+            currentMangaId = mangaId;
+            currentChapterNum = parseInt(chapterNum);
+            
+            const manga = mangaList.find(m => m.id === mangaId);
+            if (!manga) return;
+
+            const chapter = manga.chapters.find(c => c.number === currentChapterNum);
+            if (!chapter) {
+                showToast('هذا الفصل غير متوفر حالياً');
+                return;
+            }
+
+            readingHistory[mangaId] = currentChapterNum;
+            saveDataToStorage();
+
+            document.getElementById('reader-manga-title').innerText = manga.title;
+            document.getElementById('reader-chapter-title').innerText = chapter.title;
+
+            const select = document.getElementById('reader-chapter-select');
+            select.innerHTML = '';
+            manga.chapters.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.number;
+                opt.innerText = `فصل ${c.number}`;
+                if (c.number === currentChapterNum) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            currentPageIndex = 0;
+            renderReaderImages(chapter.images);
+            loadComments(mangaId, currentChapterNum);
+            navigateTo('reader');
+        }
+
+        function renderReaderImages(images) {
+            const scrollContainer = document.getElementById('scroll-container');
+            scrollContainer.innerHTML = '';
+
+            images.forEach((imgUrl, index) => {
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = `صفحة ${index + 1}`;
+                img.className = 'w-full h-auto rounded-md shadow-md my-1 object-contain transition-all duration-300';
+                img.style.transform = `scale(${zoomLevel / 100})`;
+                scrollContainer.appendChild(img);
+            });
+
+            if (images.length > 0) {
+                document.getElementById('current-page-img').src = images[0];
+                document.getElementById('page-counter-text').innerText = `1 / ${images.length}`;
+            }
+        }
+
+        function setReaderMode(mode) {
+            readerMode = mode;
+            const scrollBtn = document.getElementById('mode-scroll-btn');
+            const pageBtn = document.getElementById('mode-page-btn');
+            const scrollContainer = document.getElementById('scroll-container');
+            const pageContainer = document.getElementById('page-container');
+
+            if (mode === 'scroll') {
+                scrollBtn.classList.add('bg-primary', 'text-white');
+                scrollBtn.classList.remove('text-gray-400');
+                pageBtn.classList.remove('bg-primary', 'text-white');
+                pageBtn.classList.add('text-gray-400');
+                
+                scrollContainer.classList.remove('hidden');
+                pageContainer.classList.add('hidden');
+            } else {
+                pageBtn.classList.add('bg-primary', 'text-white');
+                pageBtn.classList.remove('text-gray-400');
+                scrollBtn.classList.remove('bg-primary', 'text-white');
+                scrollBtn.classList.add('text-gray-400');
+
+                scrollContainer.classList.add('hidden');
+                pageContainer.classList.remove('hidden');
+                pageContainer.classList.add('flex');
+            }
+        }
+
+        function changeZoom(delta) {
+            zoomLevel = Math.max(70, Math.min(150, zoomLevel + delta));
+            document.getElementById('zoom-level').innerText = `${zoomLevel}%`;
+            
+            const imgs = document.querySelectorAll('#scroll-container img');
+            imgs.forEach(img => img.style.transform = `scale(${zoomLevel / 100})`);
+            document.getElementById('current-page-img').style.transform = `scale(${zoomLevel / 100})`;
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function nextPage() {
+            const manga = mangaList.find(m => m.id === currentMangaId);
+            const chapter = manga.chapters.find(c => c.number === currentChapterNum);
+            if (currentPageIndex < chapter.images.length - 1) {
+                currentPageIndex++;
+                document.getElementById('current-page-img').src = chapter.images[currentPageIndex];
+                document.getElementById('page-counter-text').innerText = `${currentPageIndex + 1} / ${chapter.images.length}`;
+            } else {
+                showToast('وصلت لآخر صفحة في هذا الفصل');
+            }
+        }
+
+        function prevPage() {
+            const manga = mangaList.find(m => m.id === currentMangaId);
+            const chapter = manga.chapters.find(c => c.number === currentChapterNum);
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                document.getElementById('current-page-img').src = chapter.images[currentPageIndex];
+                document.getElementById('page-counter-text').innerText = `${currentPageIndex + 1} / ${chapter.images.length}`;
+            }
+        }
+
+        function jumpToChapter(num) {
+            openReader(currentMangaId, num);
+        }
+
+        function navigateChapter(direction) {
+            const nextNum = currentChapterNum + direction;
+            openReader(currentMangaId, nextNum);
+        }
+
+        function closeReader() {
+            openMangaDetails(currentMangaId);
+        }
+
+        function handleScrollProgress() {
+            if (document.getElementById('view-reader').classList.contains('hidden')) return;
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('reader-progress').style.width = scrolled + '%';
+        }
+
+        /* COMMENTS SYSTEM */
+        function loadComments(mangaId, chapNum) {
+            const key = `${mangaId}_${chapNum}`;
+            const comments = commentsData[key] || [
+                { author: "علي الرسام", text: "فصل رهيب جداً ورسم الخفيات إبداع!", date: "منذ ساعتين" }
+            ];
+
+            document.getElementById('comments-count').innerText = comments.length;
+            const list = document.getElementById('comments-list');
+            list.innerHTML = '';
+
+            comments.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'glass rounded-xl p-3 space-y-1 border border-darkBorder';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-secondary">${c.author}</span>
+                        <span class="text-[10px] text-gray-500">${c.date}</span>
+                    </div>
+                    <p class="text-xs text-gray-300">${c.text}</p>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function submitComment() {
+            const author = document.getElementById('comment-author').value.trim() || 'قارئ مجهول';
+            const text = document.getElementById('comment-text').value.trim();
+
+            if (!text) {
+                showToast('يرجى كتابة نص التعليق أولاً');
+                return;
+            }
+
+            const key = `${currentMangaId}_${currentChapterNum}`;
+            if (!commentsData[key]) commentsData[key] = [];
+
+            commentsData[key].unshift({
+                author: author,
+                text: text,
+                date: 'الآن'
+            });
+
+            saveDataToStorage();
+            document.getElementById('comment-text').value = '';
+            loadComments(currentMangaId, currentChapterNum);
+            showToast('تم إضافة تعليقك بنجاح');
+        }
+
+        /* BOOKMARKS & HISTORY */
+        function toggleBookmark(id) {
+            const idx = bookmarks.indexOf(id);
+            if (idx > -1) {
+                bookmarks.splice(idx, 1);
+                showToast('تمت الإزالة من المفضلة');
+            } else {
+                bookmarks.push(id);
+                showToast('تمت الإضافة للمفضلة');
+            }
+            saveDataToStorage();
+            renderMangaGrid(mangaList);
+        }
+
+        function toggleCurrentBookmark() {
+            if (currentMangaId) {
+                toggleBookmark(currentMangaId);
+                openMangaDetails(currentMangaId);
+            }
+        }
+
+        function updateBookmarkBadge() {
+            const badge = document.getElementById('bookmark-badge');
+            if (bookmarks.length > 0) {
+                badge.innerText = bookmarks.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderBookmarksView(mode) {
+            const title = document.getElementById('bookmarks-view-title');
+            const grid = document.getElementById('bookmarks-grid');
+            grid.innerHTML = '';
+
+            if (mode === 'bookmarks') {
+                title.innerHTML = `<i class="fa-solid fa-bookmark text-primary"></i> قائمة المفضلة (${bookmarks.length})`;
+                const bookmarkedList = mangaList.filter(m => bookmarks.includes(m.id));
+                renderMangaGridInContainer(bookmarkedList, grid);
+            } else {
+                title.innerHTML = `<i class="fa-solid fa-clock-rotate-left text-secondary"></i> سجل القراءة الأخير`;
+                const historyIds = Object.keys(readingHistory).map(id => parseInt(id));
+                const historyList = mangaList.filter(m => historyIds.includes(m.id));
+                renderMangaGridInContainer(historyList, grid);
+            }
+        }
+
+        function renderMangaGridInContainer(list, container) {
+            if (list.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">لا توجد عناصر لعرضها في هذه القائمة.</div>`;
+                return;
+            }
+            list.forEach(manga => {
+                const card = document.createElement('div');
+                card.className = 'glass rounded-2xl overflow-hidden border border-darkBorder p-2 hover:border-primary cursor-pointer';
+                card.onclick = () => openMangaDetails(manga.id);
+                card.innerHTML = `
+                    <img src="${manga.cover}" alt="${manga.title}" class="w-full aspect-[3/4] object-cover rounded-xl mb-2">
+                    <h5 class="font-bold text-xs text-white line-clamp-1">${manga.title}</h5>
+                    <span class="text-[10px] text-gray-400">${manga.category}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /* SEARCH SYSTEM */
+        function handleSearch(query) {
+            const q = query.toLowerCase().trim();
+            const resContainer = document.getElementById('search-results');
+            const mobileResContainer = document.getElementById('mobile-search-results');
+
+            if (!q) {
+                resContainer.classList.add('hidden');
+                mobileResContainer.classList.add('hidden');
+                return;
+            }
+
+            const results = mangaList.filter(m => m.title.toLowerCase().includes(q) || m.category.toLowerCase().includes(q));
+
+            let html = '';
+            if (results.length === 0) {
+                html = `<div class="p-3 text-xs text-gray-400 text-center">لا توجد نتائج مطابقة</div>`;
+            } else {
+                results.forEach(m => {
+                    html += `
+                        <div onclick="openMangaDetails(${m.id}); hideSearch();" class="p-2 flex items-center gap-3 hover:bg-white/5 cursor-pointer rounded-xl">
+                            <img src="${m.cover}" class="w-10 h-12 object-cover rounded-lg">
+                            <div>
+                                <h5 class="text-xs font-bold text-white">${m.title}</h5>
+                                <span class="text-[10px] text-primary">${m.category}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            resContainer.innerHTML = html;
+            resContainer.classList.remove('hidden');
+
+            mobileResContainer.innerHTML = html;
+            mobileResContainer.classList.remove('hidden');
+        }
+
+        function hideSearch() {
+            document.getElementById('search-results').classList.add('hidden');
+            document.getElementById('mobile-search-results').classList.add('hidden');
+        }
+
+        function toggleSearchMobile() {
+            const bar = document.getElementById('mobile-search-bar');
+            bar.classList.toggle('hidden');
+        }
+
+        /* ADMIN DASHBOARD LOGIC */
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            populateAdminMangaDropdown();
+            if (isAdminLoggedIn) renderRoleManagement();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function authenticateAdmin() {
+            // Demo only: this does NOT authenticate a real administrator.
+            isAdminLoggedIn = true;
+            document.getElementById('admin-auth-sec').classList.add('hidden');
+            document.getElementById('admin-form-sec').classList.remove('hidden');
+            renderRoleManagement();
+            showToast('فُتحت المعاينة المحلية — يلزم ربط Supabase للحماية الحقيقية');
+        }
+
+        function populateAdminMangaDropdown() {
+            const select = document.getElementById('admin-select-manga');
+            select.innerHTML = '';
+            mangaList.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.innerText = m.title;
+                select.appendChild(opt);
+            });
+        }
+
+        function addNewManga() {
+            const title = document.getElementById('new-manga-title').value.trim();
+            const cover = document.getElementById('new-manga-cover').value.trim() || 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=600&auto=format&fit=crop';
+            const category = document.getElementById('new-manga-category').value;
+            const author = document.getElementById('new-manga-author').value.trim() || 'المؤلف الإفتراضي';
+            const desc = document.getElementById('new-manga-desc').value.trim() || 'نبذة عن العمل الجديد...';
+
+            if (!title) {
+                showToast('يرجى إدخال عنوان المانجا');
+                return;
+            }
+
+            const newManga = {
+                id: Date.now(),
+                title: title,
+                cover: cover,
+                category: category,
+                rating: 5.0,
+                author: author,
+                views: '1',
+                status: 'مستمر',
+                description: desc,
+                chapters: []
+            };
+
+            mangaList.unshift(newManga);
+            saveDataToStorage();
+            showToast('تمت إضافة المانجا بنجاح!');
+            closeAdminModal();
+            renderMangaGrid(mangaList);
+        }
+
+        function addNewChapter() {
+            const mangaId = parseInt(document.getElementById('admin-select-manga').value);
+            const num = parseInt(document.getElementById('new-chapter-num').value);
+            const rawImages = document.getElementById('new-chapter-images').value.trim();
+
+            if (!num || !rawImages) {
+                showToast('يرجى ملء جميع الحقول المفروضة للفصل');
+                return;
+            }
+
+            const images = rawImages.split(/[\n,]+/).map(url => url.trim()).filter(url => url.length > 0);
+
+            const manga = mangaList.find(m => m.id === mangaId);
+            if (manga) {
+                manga.chapters.push({
+                    number: num,
+                    title: `الفصل ${num}`,
+                    images: images
+                });
+                saveDataToStorage();
+                showToast(`تم نشر الفصل ${num} بنجاح!`);
+                closeAdminModal();
+            }
+        }
+
+        /* ROLE MANAGEMENT — LOCAL DEMO ONLY; production permissions belong in Supabase RLS */
+        const DEFAULT_ROLES = [
+            {id:'founder',name:'Founder — المؤسس',permissions:['*'],description:'ملكية المنصة والتحكم الكامل ونقل الملكية بإجراء آمن'},
+            {id:'admin',name:'Administrator — المدير العام',permissions:['users:manage','content:review','reports:manage','manga:manage','chapters:manage','audit:read'],description:'إدارة التشغيل والمستخدمين والمحتوى دون ملكية المنصة'},
+            {id:'content_manager',name:'Content Manager — مدير المحتوى',permissions:['content:review','manga:manage','chapters:review','categories:manage'],description:'تنظيم الأعمال ومراجعة المحتوى واعتماده'},
+            {id:'publisher',name:'Publisher — الناشر',permissions:['manga:create','manga:edit_own','chapter:publish_own','stats:read_own'],description:'إضافة أعماله وفصوله ومتابعة إحصاءاتها'},
+            {id:'translator',name:'Translator — المترجم',permissions:['translation:edit_assigned','translation:submit'],description:'العمل على الترجمات المسندة إليه وإرسالها للمراجعة'},
+            {id:'editor',name:'Editor — المدقق',permissions:['translation:review','translation:approve','translation:return'],description:'تدقيق الترجمات واعتمادها أو إعادتها للتعديل'},
+            {id:'moderator',name:'Moderator — المشرف',permissions:['comments:moderate','reports:review','users:restrict'],description:'إدارة التعليقات والبلاغات وتقييد الحسابات المخالفة'},
+            {id:'support',name:'Support — الدعم الفني',permissions:['tickets:read_assigned','tickets:reply'],description:'الرد على طلبات الدعم دون الوصول لبيانات حساسة'}
+        ];
+        let demoRoles = JSON.parse(localStorage.getItem('shadow_roles') || 'null') || DEFAULT_ROLES;
+        let demoAssignments = JSON.parse(localStorage.getItem('shadow_role_assignments') || '[]');
+        function saveDemoRoles(){ localStorage.setItem('shadow_roles',JSON.stringify(demoRoles)); localStorage.setItem('shadow_role_assignments',JSON.stringify(demoAssignments)); }
+        function renderRoleManagement(){
+            const sel=document.getElementById('role-user-select');
+            const roles=document.getElementById('roles-list');
+            const assigns=document.getElementById('role-assignments-list');
+            if(!sel||!roles||!assigns)return;
+            sel.innerHTML=demoRoles.map(r=>`<option value="${escapeRoleText(r.id)}">${escapeRoleText(r.name)}</option>`).join('');
+            roles.innerHTML=demoRoles.map(r=>`<div class="rounded-xl bg-darkCard border border-darkBorder p-3"><div class="text-xs font-bold text-white">${escapeRoleText(r.name)}</div><p class="text-[10px] text-gray-400 mt-1">${escapeRoleText(r.description||'رتبة مخصصة')}</p><p class="text-[10px] text-secondary mt-2">الصلاحيات: ${r.permissions.includes('*')?'كامل الصلاحيات':r.permissions.map(escapeRoleText).join('، ')}</p></div>`).join('');
+            assigns.innerHTML=demoAssignments.length?demoAssignments.map((a,i)=>`<div class="flex items-center justify-between gap-2 rounded-xl bg-darkCard border border-darkBorder p-2"><div class="min-w-0"><div class="text-xs text-white truncate">${escapeRoleText(a.email)}</div><div class="text-[10px] text-secondary">${escapeRoleText((demoRoles.find(r=>r.id===a.roleId)||{}).name||'رتبة محذوفة')}</div></div><button onclick="removeDemoAssignment(${i})" class="text-xs text-red-400">إزالة</button></div>`).join(''):'<p class="text-[11px] text-gray-500">لا توجد تعيينات تجريبية بعد.</p>';
+        }
+        function escapeRoleText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+        function assignDemoRole(){
+            const email=document.getElementById('role-user-email').value.trim().toLowerCase();
+            const roleId=document.getElementById('role-user-select').value;
+            if(!/^\S+@\S+\.\S+$/.test(email)){showToast('أدخل بريداً إلكترونياً صحيحاً');return;}
+            const existing=demoAssignments.find(a=>a.email===email);
+            if(existing)existing.roleId=roleId;else demoAssignments.push({email,roleId});
+            saveDemoRoles();renderRoleManagement();showToast('تم حفظ التعيين التجريبي محلياً');
+        }
+        function createCustomRole(){
+            const name=document.getElementById('custom-role-name').value.trim();
+            const permissions=[...document.querySelectorAll('.custom-role-perm:checked')].map(x=>x.value);
+            if(!name){showToast('اكتب اسم الرتبة أولاً');return;}
+            if(!permissions.length){showToast('اختر صلاحية واحدة على الأقل');return;}
+            demoRoles.push({id:'custom_'+Date.now(),name,permissions,description:'رتبة مخصصة أنشأها مالك المنصة'});
+            saveDemoRoles();renderRoleManagement();document.getElementById('custom-role-name').value='';
+            document.querySelectorAll('.custom-role-perm').forEach(x=>x.checked=false);showToast('تم إنشاء الرتبة التجريبية');
+        }
+        function removeDemoAssignment(index){demoAssignments.splice(index,1);saveDemoRoles();renderRoleManagement();}
+
+                /* DMCA MODAL */
+        function openDmcaModal() { document.getElementById('dmca-modal').classList.remove('hidden'); }
+        function closeDmcaModal() { document.getElementById('dmca-modal').classList.add('hidden'); }
+
+        /* TOAST UTILITY */
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'glass text-white text-xs font-bold px-4 py-3 rounded-xl border border-primary/40 shadow-xl pointer-events-auto flex items-center gap-2 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-secondary"></i> <span>${msg}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+<!-- Supabase connection: public publishable key only. Secure access is enforced by database RLS. -->
+    <script type="module">
+      import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+      const SUPABASE_URL = 'https://wrcgfklhzggtjzjtwcll.supabase.co';
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_kJNZW76QSmJ9JNsdog4SHw_QrIXeoo6';
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      window.shadowSupabase = supabase;
+      window.shadowSupabaseReady = (async () => {
+        try {
+          const { error } = await supabase.from('roles').select('id').limit(1);
+          if (error) throw error;
+          console.info('[Shadow Manga] Supabase connection successful.');
+          window.dispatchEvent(new CustomEvent('shadow-supabase-ready', { detail: { ok: true } }));
+          return true;
+        } catch (error) {
+          console.error('[Shadow Manga] Supabase connection failed:', error.message);
+          window.dispatchEvent(new CustomEvent('shadow-supabase-ready', { detail: { ok: false, message: error.message } }));
+          return false;
+        }
+      })();
+    </script>
+</body>
+</html>
